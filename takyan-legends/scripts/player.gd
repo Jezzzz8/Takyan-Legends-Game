@@ -23,9 +23,19 @@ var kick_quality = "missed"
 var kick_hit_detected = false
 
 # Quality thresholds (relative to kick area center)
-const PERFECT_DISTANCE = 75.0   # Pixels from center
-const GREAT_DISTANCE = 50.0     # Pixels from center  
+const PERFECT_DISTANCE = 50.0   # Pixels from center
+const GREAT_DISTANCE = 75.0     # Pixels from center  
 const GOOD_DISTANCE = 100.0      # Pixels from center
+
+# Base kick force and quality multipliers
+const BASE_KICK_FORCE = 250.0  # Base force applied to takyan
+const RUN_KICK_MULTIPLIER = 1.3  # Multiplier when running
+
+# Quality multipliers for kick force
+const PERFECT_FORCE_MULTIPLIER = 2.0
+const GREAT_FORCE_MULTIPLIER = 1.7
+const GOOD_FORCE_MULTIPLIER = 1.5
+const MISSED_FORCE_MULTIPLIER = 0.7  # Weak kick if technically hit but poor quality
 
 func _ready():
 	if kick_area:
@@ -150,34 +160,64 @@ func calculate_kick_quality(hit_position: Vector2) -> String:
 	var kick_center = kick_area.global_position
 	var distance = hit_position.distance_to(kick_center)
 	
-	if distance <= GREAT_DISTANCE:
-		return "great"
-	elif distance <= PERFECT_DISTANCE:
+	if distance <= PERFECT_DISTANCE:
 		return "perfect"
+	elif distance <= GREAT_DISTANCE:
+		return "great"
 	elif distance <= GOOD_DISTANCE:
 		return "good"
 	else:
 		return "missed"
+
+func calculate_kick_force() -> float:
+	var base_force = BASE_KICK_FORCE
+	
+	# Apply run multiplier
+	if current_speed == RUN_SPEED:
+		base_force *= RUN_KICK_MULTIPLIER
+	
+	# Apply quality multiplier
+	match kick_quality:
+		"perfect":
+			base_force *= PERFECT_FORCE_MULTIPLIER
+		"great":
+			base_force *= GREAT_FORCE_MULTIPLIER
+		"good":
+			base_force *= GOOD_FORCE_MULTIPLIER
+		"missed":
+			base_force *= MISSED_FORCE_MULTIPLIER
+	
+	return base_force
 
 func analyze_kick_quality():
 	print("Final kick quality: ", kick_quality)
 	apply_kick_rewards(kick_quality)
 
 func apply_kick_rewards(quality: String):
+	var kick_force = calculate_kick_force()
+	
 	match quality:
 		"perfect":
-			$Label.text = "Perfect"
+			$Label.text = "Perfect! " + str(int(kick_force)) + " power"
+			print("🎯 PERFECT KICK! Force: ", kick_force)
 		"great":
-			$Label.text = "Great"
+			$Label.text = "Great! " + str(int(kick_force)) + " power"
+			print("⭐ GREAT KICK! Force: ", kick_force)
 		"good":
-			$Label.text = "Good"
+			$Label.text = "Good! " + str(int(kick_force)) + " power"
+			print("👍 GOOD KICK! Force: ", kick_force)
 		"missed":
-			$Label.text = "Missed"
+			$Label.text = "Missed! " + str(int(kick_force)) + " power"
+			print("❌ WEAK KICK! Force: ", kick_force)
 
 func _on_kick_area_area_entered(area: Area2D) -> void:
 	var hit_position = area.global_position
 	kick_quality = calculate_kick_quality(hit_position)
 	kick_hit_detected = true
+	
+	var kick_force = calculate_kick_force()
+	
+	print("🎯 KICK HIT AREA: ", area.name, " - Quality: ", kick_quality, " - Force: ", kick_force)
 	
 	if area.get_parent().has_method("on_kicked"):
 		var kick_direction = Vector2(0, -1.5)
@@ -186,22 +226,17 @@ func _on_kick_area_area_entered(area: Area2D) -> void:
 		else:
 			kick_direction.x = 0.2
 		
-		var kick_power = 1.5 if current_speed == RUN_SPEED else 1.0
-		
-		# Apply quality multiplier
-		if kick_quality == "perfect":
-			kick_power *= 1.5
-		elif kick_quality == "great":
-			kick_power *= 1.3
-		elif kick_quality == "good":
-			kick_power *= 1.1
-		
-		area.get_parent().on_kicked(kick_direction, kick_power)
+		# Pass the calculated kick force to the takyan
+		area.get_parent().on_kicked(kick_direction, kick_force)
 
 func _on_kick_area_body_entered(body: Node2D) -> void:
 	var hit_position = body.global_position
 	kick_quality = calculate_kick_quality(hit_position)
 	kick_hit_detected = true
+	
+	var kick_force = calculate_kick_force()
+	
+	print("🎯 KICK HIT BODY: ", body.name, " - Quality: ", kick_quality, " - Force: ", kick_force)
 	
 	if body.has_method("on_kicked"):
 		var kick_direction = Vector2(0, -1.5)
@@ -210,14 +245,5 @@ func _on_kick_area_body_entered(body: Node2D) -> void:
 		else:
 			kick_direction.x = 0.2
 		
-		var kick_power = 1.5 if current_speed == RUN_SPEED else 1.0
-		
-		# Apply quality multiplier
-		if kick_quality == "perfect":
-			kick_power *= 1.5
-		elif kick_quality == "great":
-			kick_power *= 1.3
-		elif kick_quality == "good":
-			kick_power *= 1.1
-		
-		body.on_kicked(kick_direction, kick_power)
+		# Pass the calculated kick force to the takyan
+		body.on_kicked(kick_direction, kick_force)

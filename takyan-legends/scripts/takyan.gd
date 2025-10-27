@@ -1,10 +1,9 @@
 # takyan.gd
 extends RigidBody2D
 
-@export var base_kick_force: float = 500.0  # Increased base force
-@export var max_vertical_force: float = 800.0  # Increased max vertical
-@export var horizontal_influence: float = 0.2  # Reduced horizontal influence
-@export var spin_influence: float = 30.0
+@export var max_vertical_force: float = 1000.0  # Maximum vertical force limit
+@export var horizontal_influence: float = 1.0   # Horizontal force multiplier
+@export var spin_influence: float = 15.0        # Reduced spin
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var kick_detection_area: Area2D = $KickDetection
@@ -37,8 +36,8 @@ func _physics_process(delta):
 	check_boundaries()
 	update_visual_feedback()
 
-func on_kicked(kick_direction: Vector2, kick_power: float):
-	print("💥 TAKYAN KICKED! Direction: ", kick_direction, " Power: ", kick_power)
+func on_kicked(kick_direction: Vector2, kick_force: float):
+	print("💥 TAKYAN KICKED! Direction: ", kick_direction, " Force: ", kick_force)
 	
 	if not is_active:
 		return
@@ -52,21 +51,24 @@ func on_kicked(kick_direction: Vector2, kick_power: float):
 	# Calculate score
 	calculate_score()
 	
-	# Apply force - emphasize vertical movement
-	var force = kick_direction * base_kick_force * kick_power
+	# Apply force directly - kick_force is already the calculated total force
+	var force = kick_direction * kick_force
 	
-	# Make it even more vertical by reducing horizontal component
-	force.x *= 0.7  # Reduce horizontal force further
-	force.y = clamp(force.y, -max_vertical_force, -max_vertical_force * 0.3)
+	# Limit the vertical force to prevent excessive height
+	var vertical_force = clamp(force.y, -max_vertical_force, -max_vertical_force * 0.5)
+	force.y = vertical_force
 	
-	print("Applying force: ", force)
+	# Reduce horizontal influence further
+	force.x *= horizontal_influence
+	
+	print("Final applied force: ", force)
 	
 	# Clear any existing velocity and apply new force
 	linear_velocity = Vector2.ZERO
 	apply_impulse(force)
 	
-	# Add some spin
-	apply_torque_impulse(kick_direction.x * spin_influence * kick_power)
+	# Add subtle spin
+	apply_torque_impulse(kick_direction.x * spin_influence * (kick_force / 500.0))
 	animate_kick_effect()
 
 func calculate_score():
