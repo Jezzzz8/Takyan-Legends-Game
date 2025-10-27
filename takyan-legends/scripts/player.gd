@@ -167,23 +167,17 @@ func apply_kick_rewards(quality: String):
 	match quality:
 		"perfect":
 			$Label.text = "Perfect"
-			print("🎯 PERFECT KICK! +15 points")
 		"great":
 			$Label.text = "Great"
-			print("⭐ GREAT KICK! +10 points")
 		"good":
 			$Label.text = "Good"
-			print("👍 GOOD KICK! +5 points")
 		"missed":
 			$Label.text = "Missed"
-			print("❌ MISSED KICK! No points")
 
 func _on_kick_area_area_entered(area: Area2D) -> void:
 	var hit_position = area.global_position
 	kick_quality = calculate_kick_quality(hit_position)
 	kick_hit_detected = true
-	
-	print("🎯 KICK HIT AREA: ", area.name, " - Quality: ", kick_quality)
 	
 	if area.get_parent().has_method("on_kicked"):
 		var kick_direction = Vector2(0, -1.5)
@@ -208,8 +202,6 @@ func _on_kick_area_body_entered(body: Node2D) -> void:
 	var hit_position = body.global_position
 	kick_quality = calculate_kick_quality(hit_position)
 	kick_hit_detected = true
-	
-	print("🎯 KICK HIT BODY: ", body.name, " - Quality: ", kick_quality)
 	
 	if body.has_method("on_kicked"):
 		var kick_direction = Vector2(0, -1.5)
