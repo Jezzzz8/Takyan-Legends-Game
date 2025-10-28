@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cbtuw7dtfo8ni" path="res://scripts/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://f7x35wd2d6xp" path="res://scenes/player.tscn" id="2_0wfyh"]
-[ext_resource type="Texture2D" uid="uid://cxypvjxlvt43" path="res://assets/sprites/bg/FilipinoSchoolGround.png" id="2_tbgi4"]
+[ext_resource type="Texture2D" uid="uid://ln3bs7ahx28w" path="res://assets/sprites/bg/FilipinoSchoolCourt.png" id="2_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://pkmt1io31yop" path="res://scenes/takyan.tscn" id="3_sugp2"]
 [ext_resource type="Texture2D" uid="uid://d1qvlsci6mgpi" path="res://assets/sprites/logos/takyan_legends_logo.png" id="5_tbgi4"]
 
@@ -24,9 +24,11 @@ size = Vector2(1152, 17)
 script = ExtResource("1_jyhfs")
 
 [node name="TextureRect" type="TextureRect" parent="."]
-offset_right = 1152.0
-offset_bottom = 647.0
+offset_right = 1280.0
+offset_bottom = 720.0
 texture = ExtResource("2_tbgi4")
+expand_mode = 1
+metadata/_edit_use_anchors_ = true
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_0wfyh")
@@ -40,46 +42,78 @@ position = Vector2(896, 560)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(576, 324)
+limit_left = 0
+limit_top = 0
+limit_right = 1280
+limit_bottom = 720
+limit_smoothed = true
 
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="ScoreLabel" type="Label" parent="UI"]
-offset_right = 1152.0
+offset_right = 192.0
 offset_bottom = 64.0
 text = "SCORE"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="GameOverPanel" type="Panel" parent="UI"]
-offset_right = 1152.0
-offset_bottom = 648.0
+anchors_preset = -1
+anchor_left = 0.1
+offset_left = -128.0
+offset_right = 1280.0
+offset_bottom = 720.0
+metadata/_edit_use_anchors_ = true
 
 [node name="GameOverLabel" type="Label" parent="UI/GameOverPanel"]
-layout_mode = 0
-offset_top = 128.0
-offset_right = 1152.0
-offset_bottom = 512.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -704.0
+offset_top = -216.0
+offset_right = 704.0
+offset_bottom = 168.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "GAME OVER!"
 label_settings = SubResource("LabelSettings_jyhfs")
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="FinalScoreLabel" type="Label" parent="UI/GameOverPanel"]
-layout_mode = 0
-offset_top = 384.0
-offset_right = 1152.0
-offset_bottom = 448.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -576.0
+offset_top = 24.0
+offset_right = 576.0
+offset_bottom = 88.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Final Score: 0"
 label_settings = SubResource("LabelSettings_tbgi4")
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RestartButton" type="Button" parent="UI/GameOverPanel"]
-layout_mode = 0
-offset_left = 448.0
-offset_top = 512.0
-offset_right = 704.0
-offset_bottom = 576.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = 152.0
+offset_right = 128.0
+offset_bottom = 216.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Play Again"
 
 [node name="TextureRect" type="TextureRect" parent="UI/GameOverPanel"]
@@ -88,9 +122,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -104.0
-offset_top = 64.0
+offset_top = 48.0
 offset_right = 104.0
-offset_bottom = 272.0
+offset_bottom = 256.0
 grow_horizontal = 2
 texture = ExtResource("5_tbgi4")
 expand_mode = 1
@@ -107,20 +141,21 @@ position = Vector2(1216, 0)
 collision_mask = 3
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="LeftWall"]
-polygon = PackedVector2Array(0, 648, -64, 648, -64, 0, 0, 0)
+position = Vector2(128, 0)
+polygon = PackedVector2Array(0, 720, -64, 720, -64, 0, 0, 0)
 
 [node name="RightWall" type="StaticBody2D" parent="." groups=["boundaries"]]
 collision_mask = 3
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="RightWall"]
-polygon = PackedVector2Array(0, 648, -64, 648, -64, 0, 0, 0)
+polygon = PackedVector2Array(0, 720, -56, 720, -64, 0, 0, 0)
 
 [node name="Roof" type="StaticBody2D" parent="RightWall" groups=["boundaries"]]
 position = Vector2(1152, -64)
 collision_mask = 3
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="RightWall/Roof"]
-polygon = PackedVector2Array(-1152, 64, -1152, 0, 0, 0, 0, 64)
+polygon = PackedVector2Array(-1152, 64, -1152, 0, 128, -8, 128, 64)
 
 [node name="DeathZone" type="Area2D" parent="."]
 position = Vector2(576, 608)

@@ -20,9 +20,9 @@ var has_game_started: bool = false
 # Camera boundaries
 var camera_limits = {
 	"left": 0,
-	"right": 1152,
+	"right": 1280,
 	"top": 0,
-	"bottom": 648
+	"bottom": 720
 }
 
 func _ready():
