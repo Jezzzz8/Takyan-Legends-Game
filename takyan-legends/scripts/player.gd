@@ -8,6 +8,7 @@ extends CharacterBody2D
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var kick_quality_label: Label = $KickQualityLabel
 @onready var combo_label: Label = $UI/ComboLabel
+@onready var buttons: Control = $UI/Buttons
 
 var is_kicking = false
 var kick_timer = 0.0
@@ -213,18 +214,22 @@ func apply_kick_rewards(quality: String):
 	
 	match quality:
 		"perfect":
+			kick_quality_label.label_settings.font_color = Color.YELLOW
 			combo_label.text = "PERFECT COMBO X" + str(perfect_combo)
 			kick_quality_label.text = "Perfect! " + str(int(kick_force)) + " power"
 			print("🎯 PERFECT KICK! Force: ", kick_force)
 		"great":
+			kick_quality_label.label_settings.font_color = Color.GREEN
 			combo_label.text = ""
 			kick_quality_label.text = "Great! " + str(int(kick_force)) + " power"
 			print("⭐ GREAT KICK! Force: ", kick_force)
 		"good":
+			kick_quality_label.label_settings.font_color = Color.BLUE
 			combo_label.text = ""
 			kick_quality_label.text = "Good! " + str(int(kick_force)) + " power"
 			print("👍 GOOD KICK! Force: ", kick_force)
 		"missed":
+			kick_quality_label.label_settings.font_color = Color.WHITE
 			combo_label.text = ""
 			kick_quality_label.text = "Missed! " + str(int(kick_force)) + " power"
 			print("❌ WEAK KICK! Force: ", kick_force)
@@ -266,37 +271,3 @@ func _on_kick_area_body_entered(body: Node2D) -> void:
 		
 		# Pass the calculated kick force to the takyan
 		body.on_kicked(kick_direction, kick_force)
-	
-
-
-func _on_button_left_button_down() -> void:
-	Input.action_press("move_left")
-
-func _on_button_left_button_up() -> void:
-	Input.action_release("move_left")
-
-func _on_button_right_button_down() -> void:
-	Input.action_press("move_right")
-
-func _on_button_right_button_up() -> void:
-	Input.action_release("move_right")
-
-func _on_button_kick_button_down() -> void:
-	Input.action_press("kick")
-
-func _on_button_kick_button_up() -> void:
-	Input.action_release("kick")
-
-func _on_button_jump_button_down() -> void:
-	Input.action_press("jump")
-
-func _on_button_jump_button_up() -> void:
-	Input.action_release("jump")
-
-
-func _on_button_run_button_down() -> void:
-	Input.action_press("run")
-
-
-func _on_button_run_button_up() -> void:
-	Input.action_release("run")

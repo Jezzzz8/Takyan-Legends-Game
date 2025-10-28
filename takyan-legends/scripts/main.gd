@@ -10,6 +10,7 @@ extends Node2D
 @onready var game_over_label: Label = $UI/GameOverPanel/GameOverLabel
 @onready var final_score_label: Label = $UI/GameOverPanel/FinalScoreLabel
 @onready var restart_button: Button = $UI/GameOverPanel/RestartButton
+@onready var button: Control = $UI/Buttons
 
 var score: int = 0
 var is_game_over: bool = false
@@ -24,6 +25,12 @@ var camera_limits = {
 	"top": 0,
 	"bottom": 720
 }
+
+# Camera follow variables
+var camera_target_position: Vector2 = Vector2.ZERO
+const CAMERA_SMOOTH_SPEED: float = 5.0
+const MAX_CAMERA_ZOOM: float = 1.5
+const MIN_CAMERA_ZOOM: float = 1.5
 
 func _ready():
 	# Set initial positions
@@ -44,21 +51,24 @@ func _ready():
 	# Connect restart button
 	restart_button.pressed.connect(_on_restart_button_pressed)
 	
-	# Start the game immediately with takyan moving
-	start_game()
+	game_over_label.visible = false
+	restart_button.text = "Start"
+	final_score_label.visible = false
 	
+	game_over()
 	# Initialize UI
 	update_score(0)
-	game_over_panel.visible = false
+	
+	# Initialize camera position
+	camera.global_position = (player.global_position + takyan.global_position) / 2
 
 func _physics_process(delta: float) -> void:
 	if is_game_over:
 		takyan.global_position = initial_takyan_position
 		player.visible = false
-	
 	else:
 		player.visible = true
-		
+
 func start_game():
 	has_game_started = true
 	# Apply initial kick to takyan
@@ -74,9 +84,9 @@ func set_camera_limits():
 	camera.limit_top = camera_limits.top
 	camera.limit_bottom = camera_limits.bottom
 	
-	# Optional: Enable camera smoothing
+	# Enable camera smoothing
 	camera.position_smoothing_enabled = true
-	camera.position_smoothing_speed = 3.0
+	camera.position_smoothing_speed = CAMERA_SMOOTH_SPEED
 
 func _process(delta):
 	if not is_game_over:
@@ -85,25 +95,48 @@ func _process(delta):
 			game_over()
 		
 		# Update camera to follow both player and takyan
-		update_camera()
+		update_camera(delta)
 
-func update_camera():
+func update_camera(delta: float):
+	if is_game_over:
+		return
+	
 	# Calculate center between player and takyan
-	var center_position = (player.global_position + takyan.global_position) / 2
+	var player_pos = player.global_position
+	var takyan_pos = takyan.global_position
 	
-	# Apply camera limits to the center position
-	center_position.x = clamp(center_position.x, camera_limits.left + get_viewport().size.x / 2 / camera.zoom.x, 
-							  camera_limits.right - get_viewport().size.x / 2 / camera.zoom.x)
-	center_position.y = clamp(center_position.y, camera_limits.top + get_viewport().size.y / 2 / camera.zoom.y, 
-							  camera_limits.bottom - get_viewport().size.y / 2 / camera.zoom.y)
+	# Calculate weighted center (you can adjust weights if needed)
+	camera_target_position = (player_pos + takyan_pos) / 2
 	
-	# Smooth camera movement
-	camera.global_position = camera.global_position.lerp(center_position, 0.1)
+	# Apply camera limits to the target position
+	var viewport_size = get_viewport_rect().size
+	var half_viewport = viewport_size / 2 / camera.zoom
 	
-	# Optional: Zoom out when objects are far apart
+	camera_target_position.x = clamp(camera_target_position.x, 
+		camera_limits.left + half_viewport.x, 
+		camera_limits.right - half_viewport.x)
+	
+	camera_target_position.y = clamp(camera_target_position.y, 
+		camera_limits.top + half_viewport.y, 
+		camera_limits.bottom - half_viewport.y)
+	
+	# Smooth camera movement using lerp
+	camera.global_position = camera.global_position.lerp(camera_target_position, CAMERA_SMOOTH_SPEED * delta)
+	
+	# Dynamic zoom based on distance between player and takyan
+	update_camera_zoom()
+
+func update_camera_zoom():
 	var distance = player.global_position.distance_to(takyan.global_position)
-	var target_zoom = clamp(Vector2.ONE * (1.0 + distance / 500.0), Vector2.ONE, Vector2.ONE * 1.5)
-	camera.zoom = camera.zoom.lerp(target_zoom, 0.1)
+	
+	# Calculate target zoom based on distance
+	# When objects are close: zoom in (higher zoom value)
+	# When objects are far: zoom out (lower zoom value)
+	var normalized_distance = distance / 800.0  # Adjust 800 to change sensitivity
+	var target_zoom = clamp(1.0 + normalized_distance * 0.5, MIN_CAMERA_ZOOM, MAX_CAMERA_ZOOM)
+	
+	# Smooth zoom transition
+	camera.zoom = camera.zoom.lerp(Vector2.ONE * target_zoom, 0.1)
 
 func _on_death_zone_body_entered(body: Node):
 	print("Death zone detected body: ", body.name)
@@ -131,7 +164,8 @@ func game_over():
 	
 	# Show game over panel
 	game_over_panel.visible = true
-
+	player.buttons.visible = false
+	
 func reset_game():
 	# Reset game state
 	score = 0
@@ -142,12 +176,20 @@ func reset_game():
 	player.global_position = initial_player_position
 	takyan.global_position = initial_takyan_position
 	
+	# Reset camera
+	camera.global_position = (player.global_position + takyan.global_position) / 2
+	camera.zoom = Vector2.ONE
+	
 	# Start the game again with initial kick
 	start_game()
 	
 	# Reset UI
 	update_score(0)
+	restart_button.text = "Play Again"
+	final_score_label.visible = true
 	game_over_panel.visible = false
+	game_over_label.visible = true
+	player.buttons.visible = true
 
 func update_score(points: int):
 	score += points
