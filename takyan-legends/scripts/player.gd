@@ -1,11 +1,13 @@
 extends CharacterBody2D
 
-const SPEED = 150.0
-const RUN_SPEED = 300.0
-const JUMP_VELOCITY = -300.0
+@export var SPEED = 150.0
+@export var RUN_SPEED = 300.0
+@export var JUMP_VELOCITY = -300.0
 
 @onready var kick_area: Area2D = $Kick_Area
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var kick_quality_label: Label = $KickQualityLabel
+@onready var combo_label: Label = $UI/ComboLabel
 
 var is_kicking = false
 var kick_timer = 0.0
@@ -21,6 +23,8 @@ const KICK_COOLDOWN = 0.3
 # Kick analyzer variables
 var kick_quality = "missed"
 var kick_hit_detected = false
+
+var perfect_combo = 0
 
 # Quality thresholds (relative to kick area center)
 const PERFECT_DISTANCE = 50.0   # Pixels from center
@@ -45,9 +49,6 @@ func _ready():
 	else:
 		print("ERROR: Kick area not found!")
 
-func _process(delta: float) -> void:
-	apply_kick_rewards(kick_quality)
-
 func _physics_process(delta: float) -> void:
 	# Handle kick timer
 	if is_kicking:
@@ -55,6 +56,7 @@ func _physics_process(delta: float) -> void:
 		if kick_timer <= 0:
 			is_kicking = false
 			air_kick_momentum = Vector2.ZERO
+			analyze_kick_quality()
 			if not kick_hit_detected:
 				kick_quality = "missed"
 				analyze_kick_quality()
@@ -190,24 +192,41 @@ func calculate_kick_force() -> float:
 	return base_force
 
 func analyze_kick_quality():
+	var quality = kick_quality
+	
+	match quality:
+		"perfect":
+			perfect_combo += 1
+		"great":
+			perfect_combo = 0
+		"good":
+			perfect_combo = 0
+		"missed":
+			perfect_combo = 0
+
 	print("Final kick quality: ", kick_quality)
 	apply_kick_rewards(kick_quality)
 
 func apply_kick_rewards(quality: String):
 	var kick_force = calculate_kick_force()
+	var combo = perfect_combo
 	
 	match quality:
 		"perfect":
-			$Label.text = "Perfect! " + str(int(kick_force)) + " power"
+			combo_label.text = "PERFECT COMBO X" + str(perfect_combo)
+			kick_quality_label.text = "Perfect! " + str(int(kick_force)) + " power"
 			print("🎯 PERFECT KICK! Force: ", kick_force)
 		"great":
-			$Label.text = "Great! " + str(int(kick_force)) + " power"
+			combo_label.text = ""
+			kick_quality_label.text = "Great! " + str(int(kick_force)) + " power"
 			print("⭐ GREAT KICK! Force: ", kick_force)
 		"good":
-			$Label.text = "Good! " + str(int(kick_force)) + " power"
+			combo_label.text = ""
+			kick_quality_label.text = "Good! " + str(int(kick_force)) + " power"
 			print("👍 GOOD KICK! Force: ", kick_force)
 		"missed":
-			$Label.text = "Missed! " + str(int(kick_force)) + " power"
+			combo_label.text = ""
+			kick_quality_label.text = "Missed! " + str(int(kick_force)) + " power"
 			print("❌ WEAK KICK! Force: ", kick_force)
 
 func _on_kick_area_area_entered(area: Area2D) -> void:
@@ -247,3 +266,37 @@ func _on_kick_area_body_entered(body: Node2D) -> void:
 		
 		# Pass the calculated kick force to the takyan
 		body.on_kicked(kick_direction, kick_force)
+	
+
+
+func _on_button_left_button_down() -> void:
+	Input.action_press("move_left")
+
+func _on_button_left_button_up() -> void:
+	Input.action_release("move_left")
+
+func _on_button_right_button_down() -> void:
+	Input.action_press("move_right")
+
+func _on_button_right_button_up() -> void:
+	Input.action_release("move_right")
+
+func _on_button_kick_button_down() -> void:
+	Input.action_press("kick")
+
+func _on_button_kick_button_up() -> void:
+	Input.action_release("kick")
+
+func _on_button_jump_button_down() -> void:
+	Input.action_press("jump")
+
+func _on_button_jump_button_up() -> void:
+	Input.action_release("jump")
+
+
+func _on_button_run_button_down() -> void:
+	Input.action_press("run")
+
+
+func _on_button_run_button_up() -> void:
+	Input.action_release("run")
