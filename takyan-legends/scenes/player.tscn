@@ -80,7 +80,7 @@ animations = [{
 "duration": 0.1,
 "texture": SubResource("AtlasTexture_oprun")
 }],
-"loop": true,
+"loop": false,
 "name": &"fly_kick",
 "speed": 1.0
 }, {
@@ -172,8 +172,9 @@ script = ExtResource("1_g2els")
 position = Vector2(-1, -24)
 scale = Vector2(3.81641, 3.81641)
 sprite_frames = SubResource("SpriteFrames_smehm")
-animation = &"fly_kick"
+animation = &"run"
 autoplay = "idle"
+frame_progress = 0.506851
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_ur7pv")
@@ -227,7 +228,7 @@ offset_right = 40.0
 grow_vertical = 0
 
 [node name="ButtonLeft" type="TouchScreenButton" parent="UI/Buttons/ButtonLeftControl"]
-position = Vector2(96, -168)
+position = Vector2(64, -170)
 scale = Vector2(3.04762, 3.04762)
 texture_normal = ExtResource("4_smehm")
 texture_pressed = ExtResource("5_3v2ag")
@@ -243,7 +244,7 @@ offset_right = 40.0
 grow_vertical = 0
 
 [node name="ButtonRight" type="TouchScreenButton" parent="UI/Buttons/ButtonRightControl"]
-position = Vector2(288, -168)
+position = Vector2(256, -170)
 scale = Vector2(3.04762, 3.04762)
 texture_normal = ExtResource("5_ur7pv")
 texture_pressed = ExtResource("7_jej6c")
@@ -262,7 +263,7 @@ grow_horizontal = 0
 grow_vertical = 0
 
 [node name="ButtonKick" type="TouchScreenButton" parent="UI/Buttons/ButtonKickControl"]
-position = Vector2(-280, -328)
+position = Vector2(-152, -328)
 scale = Vector2(3.04762, 3.04762)
 texture_normal = ExtResource("6_y4r1p")
 texture_pressed = ExtResource("9_f1ej7")
@@ -278,7 +279,7 @@ offset_right = 40.0
 grow_vertical = 0
 
 [node name="ButtonJump" type="TouchScreenButton" parent="UI/Buttons/ButtonJumpControl"]
-position = Vector2(192, -326)
+position = Vector2(160, -328)
 scale = Vector2(3.04762, 3.04762)
 texture_normal = ExtResource("7_d2wvv")
 texture_pressed = ExtResource("11_oprun")
@@ -297,7 +298,7 @@ grow_horizontal = 0
 grow_vertical = 0
 
 [node name="ButtonRun" type="TouchScreenButton" parent="UI/Buttons/ButtonRunControl"]
-position = Vector2(-280, -168)
+position = Vector2(-152, -168)
 scale = Vector2(3.09524, 3.09524)
 texture_normal = ExtResource("8_3v2ag")
 texture_pressed = ExtResource("12_a8ls1")
